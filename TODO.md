@@ -8,3 +8,4 @@
 - [ ] Customize installed command name
 - [ ] options for header
 - [ ] support for more languages? (cpp / fortran at least)
+- [ ] Confirmation before writing over current makefile
