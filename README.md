@@ -1,7 +1,5 @@
 # Magic Makefile Maker: a Modest Makefile Model (MMMMMM) 💫
 
-## Introduction
-
 Welcome to MMMMMM (Magic Makefile Maker), a tool designed to streamline the process of generating Makefiles for your C projects! With MMMMMM, you can create Makefiles quickly and effortlessly, freeing up your time to focus on more important tasks.
 
 ## Features
@@ -15,76 +13,32 @@ Welcome to MMMMMM (Magic Makefile Maker), a tool designed to streamline the proc
 To install MMMMMM on your system, simply run the following commands:
 
 ```bash
-./Install.sh #You may need to give execution rights
+./Install.sh # You may need to give execution rights
 ```
 
-## Usage
+The `install.sh` script supports the following flags:
+- `-l`: Install locally in your home directory.
+- `-n <customExecName>`: Specify a custom name for the command after installation.
+- `-p <pathToInstall>`: Modify the installation path (default is `/usr/bin`).
 
-Once installed, you can use MMMMMM to generate a Makefile for your project by running the `makegen` command in your project directory. This will create a Makefile based on the structure of your project's source files.
-
-## Example
-
-Here's an example of the generated Makefile:
-
-```makefile
-NAME		=	BigInt
-
-SRC_DIR		=	./sources
-SRC			= $(shell find $(SRC_DIR) -name '*.c')
-
-OBJ_DIR		=	./obj
-OBJ			=	$(patsubst $(SRC_DIR)/%.c,$(OBJ_DIR)/%.o,$(SRC))
-
-CC			=	gcc
-
-CFLAGS		=	-Wall -Wextra -Werror
-
-all: $(OBJ_DIR) $(NAME)
-	clear
-	@make header --no-print-directory
-header:
-	@cat CustomHeader.hd
-
-$(OBJ_DIR):
-	@if [ ! -d "$(OBJ_DIR)" ]; then mkdir $(OBJ_DIR); fi
-
-$(NAME): $(OBJ)
-	@$(CC) -o $(NAME) $(OBJ) $(CFLAGS)
-
-$(OBJ_DIR)/%.o: $(SRC_DIR)/%.c
-	@$(CC) $(CFLAGS) -c -o $@ \$<
-
-clean:
-	@rm -rf $(OBJ_DIR)
-
-fclean: clean
-	@rm -f $(NAME)
-
-re: fclean all
-
-run: all
-	@./$(NAME)
-
-commit:
-	@make fclean --no-print-directory
-	@git add *
-	@printf "Commit message: "
-	@read MESSAGE; 	git commit -m "$$MESSAGE"
-
-push:
-	git push
-
-fpush: commit push
-
-work:
-	@git pull
-	@code .
-	@make
-
-
-.PHONY: all clean fclean re
-
+For example:
+```bash
+./Install.sh -l # Install locally in your home directory
+./Install.sh -n "makegenerator" # Specify a custom name for the command
+./Install.sh -p "~/" # Install to your home
 ```
+
+## MMMMMM Usage
+
+Once installed, you can use MMMMMM to generate a Makefile for your project by running the `MMMMMM` command in your project directory. This will create a Makefile based on the structure of your project's source files.
+
+MMMmmm also supports the `-m` flag, which moves every `.c` file to `./src` and every `.h` file to `./includes`. For example:
+
+```bash
+MMMMMM -m
+```
+
+This will move all `.c` files to `./src` and all `.h` files to `./includes` directories.
 
 ## Contributing
 
