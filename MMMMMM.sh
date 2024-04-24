@@ -3,135 +3,119 @@ moveScript=false
 current_directory=$(basename "$PWD")
 
 if [ -x "$(command -v toilet)" ]; then
-    toilet -f future --filter gay:border:crop $current_directory > CustomHeader.hd
+	toilet -f future --filter gay:border:crop "$current_directory" > CustomHeader.hd
 else
-    echo $current_directory > CustomHeader.hd
+	echo "$current_directory" > CustomHeader.hd
 fi
 
 while getopts ":m" opt; do
-  case ${opt} in
-    m )
-      moveScript=true
-      ;;
-    \? )
-      echo "Invalid option: -$OPTARG" 1>&2
-      exit 1
-      ;;
-  esac
+	case ${opt} in
+		m )
+			moveScript=true
+		;;
+		\? )
+			echo "Invalid option: -$OPTARG" 1>&2
+			exit 1
+		;;
+	esac
 done
 shift $((OPTIND -1))
 
-if [ "$moveScript" = true ]; then
-    srcDir="./"
-    destDir="./src"
+move_files()
+{
+	local destDir=$1
+	local pattern=$2
+	local srcDir=${3:-./}
 
     mkdir -p "$destDir"
 
-    find "$srcDir" -type f -name "*.c" -exec sh -c '
-        destDir="./src"
-        for file do
-            # Get the directory structure of the file relative to the source directory
-            relDir="${file%/*}"
-            relDir="${relDir#./}"
-            # Create the corresponding directory structure in the destination directory
-            mkdir -p "$destDir/$relDir"
-            # Move the file to the destination directory while preserving the directory structure
-            mv "$file" "$destDir/$relDir"
-        done
-    ' sh {} +
+	while read -r file; do
+		# Get the directory structure of the file relative to the source directory
+		relDir="${file%/*}"
+		relDir="${relDir#./}"
+		# Create the corresponding directory structure in the destination directory
+		mkdir -p "$destDir/$relDir"
+		# Move the file to the destination directory while preserving the directory structure
+		mv "$file" "$destDir/$relDir"
+	done < <(find "$srcDir" -type f -name "$pattern")
+}
+
+if [ "$moveScript" = true ]; then
+	move_files "./src" "*.c"
+	move_files "./includes" "*.h"
 
     destDir="./includes"
-
-    mkdir -p "$destDir"
-    find "$srcDir" -type f -name "*.h" -exec sh -c '
-        destDir="./includes"
-        for file do
-            # Get the directory structure of the file relative to the source directory
-            relDir="${file%/*}"
-            relDir="${relDir#./}"
-            # Create the corresponding directory structure in the destination directory
-            mkdir -p "$destDir/$relDir"
-            # Move the file to the destination directory while preserving the directory structure
-            mv "$file" "$destDir/$relDir"
-        done
-    ' sh {} +
 fi
 
 if [ -f "./Makefile" ]; then
-	    read -p "Do you want to continue? (y/n): " choice
-    case "$choice" in 
-      y|Y ) 
+    read -rp "Do you want to continue? (y/n): " choice
+    case "$choice" in
+      y|Y )
         echo "User chose to continue."
 		mv Makefile .old_Makefile
         ;;
-      n|N ) 
+      n|N )
         echo "Aborting MMMMMM"
 		exit 1
         ;;
-      * ) 
+      * )
         echo "Invalid response. Please enter 'y' or 'n'."
 		exit 2
         ;;
     esac
 fi
 
-
-
-
-
-
-
-
-
-
-
-
-echo "NAME		=	$current_directory
+# variables expanded need to be exported
+export current_directory
+# envsubst NEED single quote
+# shellcheck disable=SC2016
+envsubst '$current_directory' <<"EOMAKEFILE" > Makefile
+NAME		=	${current_directory}
 
 SRC_DIR		=	./src
-SRC         = \$(shell find \$(SRC_DIR) -name '*.c')
+SRC         = $(shell find $(SRC_DIR) -name '*.c')
 
 OBJ_DIR		=	./obj
-OBJ			=	\$(patsubst \$(SRC_DIR)/%.c,\$(OBJ_DIR)/%.o,\$(SRC))
+OBJ			=	$(patsubst $(SRC_DIR)/%.c,$(OBJ_DIR)/%.o,$(SRC))
 
 CC			=	gcc
 
-INCLUDE_DIR =   ./includes 
+INCLUDE_DIR =   ./includes
 
-CFLAGS		=	-Wall -Wextra -Werror -I\$(INCLUDE_DIR)
+CFLAGS		=	-Wall -Wextra -Werror -I$(INCLUDE_DIR)
 
-all: \$(OBJ_DIR) \$(NAME)
+all: $(OBJ_DIR) $(NAME)
 	clear
 	@make header --no-print-directory
 header:
 	@cat CustomHeader.hd
 
-\$(OBJ_DIR):
-	@if [ ! -d \"\$(OBJ_DIR)\" ]; then mkdir \$(OBJ_DIR); fi
+$(OBJ_DIR):
+	@if [ ! -d "$(OBJ_DIR)" ]; then mkdir $(OBJ_DIR); fi
 
-\$(NAME): \$(OBJ)
-	@\$(CC) -o \$(NAME) \$(OBJ) \$(CFLAGS)
+$(NAME): $(OBJ)
+	@$(CC) -o $(NAME) $(OBJ) $(CFLAGS)
 
-\$(OBJ_DIR)/%.o: \$(SRC_DIR)/%.c
-	@\$(CC) \$(CFLAGS) -c -o \$@ \\$<
+$(OBJ_DIR)/%.o: $(SRC_DIR)/%.c
+	@$(CC) $(CFLAGS) -c -o $@ $<
 
 clean:
-	@rm -rf \$(OBJ_DIR)
+	@rm -rf $(OBJ_DIR)
 
 fclean: clean
-	@rm -f \$(NAME)
+	@rm -f $(NAME)
 
 re: fclean all
 
 run: all
-	@./\$(NAME)
+	@./$(NAME)
 
 commit:
 	@make fclean --no-print-directory
 	@git add *
-	@printf \"Commit message: \"
+	@printf "Commit message: "
 	@read MESSAGE; \
-	git commit -m \"\$\$MESSAGE\"
+	git commit -m "$$MESSAGE"
 
 push:
 	git push
@@ -144,4 +128,8 @@ work:
 	@make
 
 
-.PHONY: all header clean fclean re run commit push fpush work" > Makefile
+.PHONY: all header clean fclean re run commit push fpush work
+EOMAKEFILE
+
+# un-export variable without losing value
+export -n current_directory
