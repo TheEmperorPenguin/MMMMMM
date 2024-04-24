@@ -1,7 +1,42 @@
 #!/bin/bash
 
 current_directory=$(basename "$PWD")
-toilet -f future --filter gay:border:crop $current_directory > CustomHeader.hd
+
+if [ -x "$(command -v toilet)" ]; then
+    toilet -f future --filter gay:border:crop $current_directory > CustomHeader.hd
+else
+    echo $current_directory > CustomHeader.hd
+fi
+
+if [ -f "./Makefile" ]; then
+	    read -p "Do you want to continue? (y/n): " choice
+    case "$choice" in 
+      y|Y ) 
+        echo "User chose to continue."
+		mv Makefile .old_Makefile
+        ;;
+      n|N ) 
+        echo "Aborting MMMMMM"
+		exit 1
+        ;;
+      * ) 
+        echo "Invalid response. Please enter 'y' or 'n'."
+		exit 2
+        ;;
+    esac
+fi
+
+
+
+
+
+
+
+
+
+
+
+
 echo "NAME		=	$current_directory
 
 SRC_DIR		=	./sources
@@ -12,7 +47,9 @@ OBJ			=	\$(patsubst \$(SRC_DIR)/%.c,\$(OBJ_DIR)/%.o,\$(SRC))
 
 CC			=	gcc
 
-CFLAGS		=	-Wall -Wextra -Werror
+INCLUDE_DIR =   ./includes 
+
+CFLAGS		=	-Wall -Wextra -Werror -I\$(INCLUDE_DIR)
 
 all: \$(OBJ_DIR) \$(NAME)
 	clear
@@ -58,4 +95,4 @@ work:
 	@make
 
 
-.PHONY: all clean fclean re" > Makefile
+.PHONY: all header clean fclean re run commit push fpush work" > Makefile
