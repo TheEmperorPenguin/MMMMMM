@@ -9,3 +9,5 @@
 - [ ] options for header
 - [ ] support for more languages? (cpp / fortran at least)
 - [ ] Confirmation before writing over current makefile
+- [ ] move all .c to sources automatically (maybe check if src ou srcs exist)
+- [ ] same for includes
