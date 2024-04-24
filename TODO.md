@@ -7,7 +7,7 @@
 - [X] Customize install dir
 - [x] Customize installed command name
 - [ ] options for header
-- [ ] support for more languages? (cpp / fortran at least)
+- [ ] support for more languages? (cpp)
 - [x] Confirmation before writing over current makefile
 - [x] saving the previous makefile??
 - [x] move all .c to sources automatically
