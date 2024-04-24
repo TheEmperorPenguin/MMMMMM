@@ -14,3 +14,4 @@
 - [x] same for includes (problems with path? No)
 - [ ] change compiler flag
 - [ ] add compil flags flag
+- [ ] add to path automatically ?
