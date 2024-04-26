@@ -15,3 +15,5 @@
 - [ ] change compiler flag
 - [ ] add compil flags flag
 - [ ] add to path automatically ?
+- [ ] make libraries
+- [ ] handle libraries in project(test with libft)
