@@ -2,22 +2,35 @@
 moveScript=false
 current_directory=$(basename "$PWD")
 
-if [ -x "$(command -v toilet)" ]; then
-	toilet -f future --filter gay:border:crop "$current_directory" > CustomHeader.hd
-else
-	echo "$current_directory" > CustomHeader.hd
-fi
+createHeader()
+{
+	if [ -x "$(command -v toilet)" ]; then
+		toilet -f future --filter gay:border:crop "$current_directory" > CustomHeader.hd
+	else
+		echo "$current_directory" > CustomHeader.hd
+	fi
+}
+createHeader
 
-while getopts ":m" opt; do
-	case ${opt} in
-		m )
+while [ $# -gt 0 ]; do
+	case $1 in
+		-m )
 			moveScript=true
+		;;
+		-c )
+			echo "c"
+			exit 0
+		;;
+		-cpp )
+			echo "cpp"
+			exit 0
 		;;
 		\? )
 			echo "Invalid option: -$OPTARG" 1>&2
 			exit 1
 		;;
 	esac
+	shift
 done
 shift $((OPTIND -1))
 
