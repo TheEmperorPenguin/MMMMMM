@@ -15,5 +15,6 @@
 - [ ] change compiler flag
 - [ ] add compil flags flag
 - [ ] add to path automatically ?
-- [ ] make libraries
+- [ ] make libraries (with a rule to execute with main.c / test.c (whatever) to compile like a program to test the library)
 - [ ] handle libraries in project(test with libft)
+- [ ] Make most of the functionality available at creation later available to modify already existing makefile
