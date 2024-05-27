@@ -2,7 +2,27 @@
 moveScript=false
 current_directory=$(basename "$PWD")
 
-createHeader()
+
+if [ -f "./Makefile" ]; then #check right at the start before doing anything to avoid uncessary code execution
+    read -rp "Do you want to continue? (y/n): " choice
+    case "$choice" in
+      y|Y )
+        echo "User chose to continue."
+		mv Makefile .old_Makefile
+        ;;
+      n|N )
+        echo "Aborting MMMMMM"
+		exit 1
+        ;;
+      * )
+        echo "Invalid response. Please enter 'y' or 'n'."
+		exit 2
+        ;;
+    esac
+fi
+
+
+createHeader()	#custom header creation
 {
 	if [ -x "$(command -v toilet)" ]; then
 		toilet -f future --filter gay:border:crop "$current_directory" > CustomHeader.hd
@@ -12,7 +32,30 @@ createHeader()
 }
 createHeader
 
-while [ $# -gt 0 ]; do
+count_and_compare_files() #auto detect the language (c, cpp)
+{
+    local dir=${1:-.}
+    
+    cpp_count=$(find "$dir" -type f -name '*.cpp' | wc -l)
+    hpp_count=$(find "$dir" -type f -name '*.hpp' | wc -l)
+    
+    c_count=$(find "$dir" -type f -name '*.c' | wc -l)
+    h_count=$(find "$dir" -type f -name '*.h' | wc -l)
+    
+    total_cpp_hpp=$((cpp_count + hpp_count))
+    total_c_h=$((c_count + h_count))
+
+    
+    if [ "$total_cpp_hpp" -gt "$total_c_h" ]; then
+        echo cpp #cpp is probably used
+    else
+		echo c #c is probably used
+    fi
+}
+count_and_compare_files
+
+
+while [ $# -gt 0 ]; do #Get all the options in input
 	case $1 in
 		-m )
 			moveScript=true
@@ -34,7 +77,8 @@ while [ $# -gt 0 ]; do
 done
 shift $((OPTIND -1))
 
-move_files()
+
+move_files() #Move to destDir all file with pattern from srcDir
 {
 	local destDir=$1
 	local pattern=$2
@@ -53,29 +97,20 @@ move_files()
 	done < <(find "$srcDir" -type f -name "$pattern")
 }
 
+delete_empty_dirs_in_current() {
+    local current_dir="./"
+
+    # Recursively find and delete empty directories
+    find "$current_dir" -type d -empty -delete
+}
+
+
 if [ "$moveScript" = true ]; then
 	move_files "./src" "*.c"
 	move_files "./includes" "*.h"
+	delete_empty_dirs_in_current
 
     destDir="./includes"
-fi
-
-if [ -f "./Makefile" ]; then
-    read -rp "Do you want to continue? (y/n): " choice
-    case "$choice" in
-      y|Y )
-        echo "User chose to continue."
-		mv Makefile .old_Makefile
-        ;;
-      n|N )
-        echo "Aborting MMMMMM"
-		exit 1
-        ;;
-      * )
-        echo "Invalid response. Please enter 'y' or 'n'."
-		exit 2
-        ;;
-    esac
 fi
 
 # variables expanded need to be exported

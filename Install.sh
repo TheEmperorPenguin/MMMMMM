@@ -7,7 +7,7 @@ moveScript=false
 
 while getopts ":n:p:l" opt; do
   case ${opt} in
-    l )
+    l ) #~/.cmds/$customName think there is a standard .dir for this but i'll look into it later not really important rn
       homeInstall=true
       ;;
     n )
