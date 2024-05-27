@@ -1,22 +1,28 @@
 #!/bin/bash
-moveScript=false
+moveScript=true
 header=true
 extraFlags=""
-headerText="$current_directory"
+SRCDIR="./src"
 compiler="gcc"	#should be "" when there will be default compiler by language
 current_directory=$(basename "$PWD")
+headerText="$current_directory"
 
 usage() {
-    echo "Usage: $0 [-m] [-f|--Flags <flags>] ([--NoHeader] > [[-h|--Header <header text>]])  [-c|--Compiler] [-l <installDir>] [-cpp]"
+    echo "Usage: $0 [-n, --NoMove] [-f|--Flags <flags>] ([--NoHeader] > [[-h|--Header <header text>]])  [-c|--Compiler] [-l <installDir>] [-cpp]"
     echo "Options:"
-    echo "  -m: Move script files"
+    echo "  -n, --NoMove: Doesnt touch the project file structure"
     echo "  -f, --Flags <flags>: Additional flags for compilation"
     echo "  --NoHeader: Skip header creation"
 	echo "  -h, --Header <header text>: specify the text printed to standard output when doing a make"
     echo "  -c, --Compiler: specify the compiler for the Makefile"
     echo "  -l <installDir>: Specify installation directory"
     echo "  -cpp: Output 'cpp' and exit"
-    exit 1
+	if [ -f "./Makefile" ]; then
+		exit 1
+	else
+		mv .old_Makefile Makefile
+		exit 2
+	fi
 }
 
 if [ -f "./Makefile" ]; then #check right at the start before doing anything to avoid uncessary code execution
@@ -57,13 +63,14 @@ count_and_compare_files() #auto detect the language (c, cpp)
 		echo c #c is probably used
     fi
 }
-count_and_compare_files
+#count_and_compare_files
 
 
 while [ $# -gt 0 ]; do #Get all the options in input
 	case $1 in
-		-m )
-			moveScript=true
+		-n | --NoMove )
+			moveScript=false
+			SRCDIR="./"
 		;;
 		-f | --Flags )	
             shift
@@ -105,12 +112,13 @@ while [ $# -gt 0 ]; do #Get all the options in input
             usage
             ;;
         * )
-            break
+            usage
             ;;
 	esac
 	shift
 done
 shift $((OPTIND -1))
+
 
 createHeader()	#custom header creation
 {
@@ -145,6 +153,7 @@ move_files() #Move to destDir all file with pattern from srcDir
 	done < <(find "$srcDir" -type f -name "$pattern")
 }
 
+
 delete_empty_dirs_in_current() {
     local current_dir="./"
 
@@ -165,12 +174,13 @@ fi
 export current_directory
 export extraFlags
 export compiler
+export SRCDIR
 # envsubst NEED single quote
 # shellcheck disable=SC2016
-envsubst '$current_directory $extraFlags $compiler' <<"EOMAKEFILE" > Makefile
+envsubst '$current_directory $extraFlags $compiler $SRCDIR' <<"EOMAKEFILE" > Makefile
 NAME		=	${current_directory}
 
-SRC_DIR		=	./src
+SRC_DIR		=	${SRCDIR}
 SRC         = $(shell find $(SRC_DIR) -name '*.c')
 
 OBJ_DIR		=	./obj
@@ -231,3 +241,6 @@ EOMAKEFILE
 
 # un-export variable without losing value
 export -n current_directory
+export -n extraFlags
+export -n compiler
+export -n SRCDIR

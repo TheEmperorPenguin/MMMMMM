@@ -14,12 +14,15 @@
 - [x] add to path automatically ? ++not automatic but flag available to add to .zshrc (that's what i use)
 - [x] change compiler flag
 - [x] options for header
-
+- [x] if Makefile exist and ./MMMMMM -wrongflag used, makefile move to .old but no reverted after problem
 
 
 - [~] support for more languages? (cpp)
 
 
+
+- [ ] look if src / srcs / source / sources exit and include / includes for moveScript cause else kind of ugly what happens
+- ( ) add a revert to the file moved
 
 - [ ] add to path to specific file and not only ./zshrc
 - [ ] add verbose/human mode
@@ -27,3 +30,5 @@
 - [ ] handle libraries in project(test with libft)
 - [ ] Make most of the functionality available at creation later available to modify already existing makefile
 - [ ] Choose better name for flags, and double them, -n == --name 
+
+
