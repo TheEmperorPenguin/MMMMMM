@@ -1,7 +1,23 @@
 #!/bin/bash
 moveScript=false
+header=true
+extraFlags=""
+headerText="$current_directory"
+compiler="gcc"	#should be "" when there will be default compiler by language
 current_directory=$(basename "$PWD")
 
+usage() {
+    echo "Usage: $0 [-m] [-f|--Flags <flags>] ([--NoHeader] > [[-h|--Header <header text>]])  [-c|--Compiler] [-l <installDir>] [-cpp]"
+    echo "Options:"
+    echo "  -m: Move script files"
+    echo "  -f, --Flags <flags>: Additional flags for compilation"
+    echo "  --NoHeader: Skip header creation"
+	echo "  -h, --Header <header text>: specify the text printed to standard output when doing a make"
+    echo "  -c, --Compiler: specify the compiler for the Makefile"
+    echo "  -l <installDir>: Specify installation directory"
+    echo "  -cpp: Output 'cpp' and exit"
+    exit 1
+}
 
 if [ -f "./Makefile" ]; then #check right at the start before doing anything to avoid uncessary code execution
     read -rp "Do you want to continue? (y/n): " choice
@@ -20,17 +36,6 @@ if [ -f "./Makefile" ]; then #check right at the start before doing anything to 
         ;;
     esac
 fi
-
-
-createHeader()	#custom header creation
-{
-	if [ -x "$(command -v toilet)" ]; then
-		toilet -f future --filter gay:border:crop "$current_directory" > CustomHeader.hd
-	else
-		echo "$current_directory" > CustomHeader.hd
-	fi
-}
-createHeader
 
 count_and_compare_files() #auto detect the language (c, cpp)
 {
@@ -60,22 +65,65 @@ while [ $# -gt 0 ]; do #Get all the options in input
 		-m )
 			moveScript=true
 		;;
-		-c )
-			echo "c"
-			exit 0
-		;;
+		-f | --Flags )	
+            shift
+            if [ -z "$1" ]; then
+                echo "Error: Missing argument for $1"
+                exit 1
+            fi
+            extraFlags="$1"
+            ;;
+		--NoHeader )
+			header=false
+			;;
+		-h | --Header )
+		    shift
+            if [ -z "$1" ]; then
+                echo "Error: Missing argument for $1"
+                exit 1
+            fi
+            headerText="$1"
+			;;
+		-c | --Compiler )
+            shift
+            if [ -z "$1" ]; then
+                echo "Error: Missing argument for $1"
+                exit 1
+            fi
+            compiler="$1"
+            ;;
+		-l )
+            shift
+            if [ -z "$1" ]; then usage; fi
+            installDir="$1"
+            ;;
 		-cpp )
 			echo "cpp"
 			exit 0
 		;;
-		\? )
-			echo "Invalid option: -$OPTARG" 1>&2
-			exit 1
-		;;
+        -* )
+            usage
+            ;;
+        * )
+            break
+            ;;
 	esac
 	shift
 done
 shift $((OPTIND -1))
+
+createHeader()	#custom header creation
+{
+	if [ -x "$(command -v toilet)" ]; then
+		toilet -f future --filter gay:border:crop $headerText > CustomHeader.hd
+	else
+		echo "$current_directory" > CustomHeader.hd
+	fi
+}
+
+if [ "$header" = true ]; then
+	createHeader
+fi
 
 
 move_files() #Move to destDir all file with pattern from srcDir
@@ -115,9 +163,11 @@ fi
 
 # variables expanded need to be exported
 export current_directory
+export extraFlags
+export compiler
 # envsubst NEED single quote
 # shellcheck disable=SC2016
-envsubst '$current_directory' <<"EOMAKEFILE" > Makefile
+envsubst '$current_directory $extraFlags $compiler' <<"EOMAKEFILE" > Makefile
 NAME		=	${current_directory}
 
 SRC_DIR		=	./src
@@ -126,11 +176,11 @@ SRC         = $(shell find $(SRC_DIR) -name '*.c')
 OBJ_DIR		=	./obj
 OBJ			=	$(patsubst $(SRC_DIR)/%.c,$(OBJ_DIR)/%.o,$(SRC))
 
-CC			=	gcc
+CC			=	${compiler}
 
 INCLUDE_DIR =   ./includes
 
-CFLAGS		=	-Wall -Wextra -Werror -I$(INCLUDE_DIR)
+CFLAGS		=	-Wall -Wextra -Werror -I$(INCLUDE_DIR) ${extraFlags}
 
 all: $(OBJ_DIR) $(NAME)
 	clear

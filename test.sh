@@ -33,8 +33,10 @@ create_files_and_dirs() {
 
         dir_index=$(( ( RANDOM % num_dirs ) + 1 ))
         dir_name="dir_$dir_index"
-
         touch "$dir_name/$file_name$file_extension"
+
+        dir_index=$(( ( RANDOM % num_dirs ) + 1 ))
+        dir_name="dir_$dir_index"
         touch "$dir_name/$header_name$header_extension"
     done
 
