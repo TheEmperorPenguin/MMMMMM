@@ -1,3 +1,6 @@
 ./testDir/
 ./testdir/*
 ./testDir/.*
+testDir/
+testdir/*
+`testDir/.*

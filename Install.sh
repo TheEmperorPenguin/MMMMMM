@@ -7,7 +7,7 @@ moveScript=false
 pathInstall=false
 
 usage() {
-    echo "Usage: $0 [-h] [-n customName] [-l installDir] [-path]"
+    echo "Usage: $0 [-h] [-n <customName>] [-l <installDir>] [-p | --Path]"
     exit 1
 }
 
@@ -27,7 +27,7 @@ while [ $# -gt 0 ]; do
             if [ -z "$1" ]; then usage; fi
             installDir="$1"
             ;;
-        -path )
+        -p | --Path )
             pathInstall=true
             ;;
         -* )

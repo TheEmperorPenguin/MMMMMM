@@ -30,5 +30,6 @@
 - [ ] handle libraries in project(test with libft)
 - [ ] Make most of the functionality available at creation later available to modify already existing makefile
 - [ ] Choose better name for flags, and double them, -n == --name 
+- [ ] update Readme
 
 
